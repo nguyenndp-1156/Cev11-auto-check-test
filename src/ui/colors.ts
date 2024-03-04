@@ -1,0 +1,65 @@
+import type { ChakraTheme } from '@chakra-ui/react';
+
+const colors: ChakraTheme['colors'] = {
+  black: '#000',
+  white: '#fff',
+  textTitle: '#000', // title + text bold
+  textContent: '#545454', // text content + placeholder + text button
+  textDate: '#b5b5b5',
+  fieldLabel: '#8c8c8c',
+  error: '#e70000', // error message + warning
+  red: {
+    red1: '#e70000',
+    red2: '#ff0000',
+    red3: '#E53E3E',
+  },
+  gray: {
+    dark1: '#8c949f',
+    dark2: '#b5b5b5',
+    dark4: '#e7e7e7',
+    dark5: '#1D1D1D',
+    dark6: '#dfdfdf',
+    dark7: '#A5A5A5',
+    dark8: '#f3f3f3',
+    dark9: '#333',
+    dark10: '#787878',
+    dark11: '#333333',
+    dark12: '#444444',
+    light1: '#313C4F',
+    light2: '#e8e8e8',
+    light3: '#cccccc',
+    light4: '#D8D8D8',
+    light5: '#D3D3D3',
+    light6: '#d9d9d9',
+    light7: '#f9f9f9',
+    light8: '#f1f1f1',
+    light9: '#545454',
+    light10: '#8C8C8C',
+    light11: '#808080',
+    light12: '#727272',
+    light13: '#f4f4f4',
+    light14: '#d4d4d4',
+    gray500: '#8e8e8e',
+    gray700: '#8a8a8a',
+    gray900: '#1a1a1a',
+    backgroundSection1: '#D1D1D1',
+    backgroundSection2: '#E6E6E6',
+    ravenBlack: '#3d3d3d',
+    backgroundSection3: '#DCDCDC',
+    backgroundFCInfo: '#E6E7E7',
+  },
+  shadowGargoyle: '#676767',
+  primary: '#007bff',
+  secondary: '#6c757d',
+  success: '#28a745',
+  warning: '#ffc107',
+  danger: '#dc3545',
+  blue: {
+    light: '#0066cc',
+    blue1: '#628DD7',
+    blue2: '#707070',
+  },
+  fcTheme: '#000',
+};
+
+export default colors;
