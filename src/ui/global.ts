@@ -8,8 +8,8 @@ const global = {
         fontSize: '10px !important',
       },
       body: {
-        background: 'white',
-        color: 'gray.light9',
+        background: 'gray.light13',
+        color: 'black',
         fontWeight: 'light',
       },
       img: {
