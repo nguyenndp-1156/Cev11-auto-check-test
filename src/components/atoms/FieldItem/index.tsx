@@ -30,10 +30,10 @@ const FieldItem = ({
         <FormLabel
           mb="4px"
           color={labelColor}
-          fontSize="1.2rem"
+          fontSize="1.6rem"
           fontWeight="light"
           requiredIndicator={
-            <Text as="span" color="red.red1" ml="4px" fontSize="xl">
+            <Text as="span" color="red.red1" ml="4px" fontSize="1.6rem">
               *
             </Text>
           }
