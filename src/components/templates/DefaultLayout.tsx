@@ -1,7 +1,9 @@
-import { Box, Container } from '@chakra-ui/react';
 import React, { ReactElement, ReactNode } from 'react';
-import Footer from '@/components/common/Footer';
-import Header from '@/components/common/Header';
+
+import { Box, Container } from '@chakra-ui/react';
+
+import Footer from '@/components/common/Footer/Footer';
+import Header from '@/components/common/Header/Header';
 
 type Props = {
   children: ReactNode;
@@ -9,10 +11,10 @@ type Props = {
 
 export function DefaultLayout(props: Props) {
   return (
-    <Box display="flex" flexDirection="column" minHeight="100vh" pt="50px">
+    <Box display="flex" flexDirection="column" minHeight="100vh">
       <Header />
       <Container
-        maxW="container.xl"
+        maxW="container.md"
         flex="1"
         px="24px"
         pb={{ sm: '32px', md: '56px' }}
