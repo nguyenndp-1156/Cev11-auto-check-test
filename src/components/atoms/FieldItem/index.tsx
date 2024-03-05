@@ -19,8 +19,7 @@ type TFieldProps = Omit<FormControlProps, 'variant'> & {
 const FieldItem = ({
   label,
   children,
-  labelColor = 'gray.light10',
-  labelSize = { base: 'xs', md: 'sm' },
+  labelColor = 'black',
   error,
   isHideErrorMessage = false,
   ...rest
@@ -31,7 +30,7 @@ const FieldItem = ({
         <FormLabel
           mb="4px"
           color={labelColor}
-          fontSize={labelSize}
+          fontSize="1.2rem"
           fontWeight="light"
           requiredIndicator={
             <Text as="span" color="red.red1" ml="4px" fontSize="xl">
@@ -46,7 +45,7 @@ const FieldItem = ({
       {error && !isHideErrorMessage && (
         <FormErrorMessage mt="4px">
           <Text
-            fontSize="xxs"
+            fontSize="1.3rem"
             color="red.red1"
             ml="4px"
             mt="2px"

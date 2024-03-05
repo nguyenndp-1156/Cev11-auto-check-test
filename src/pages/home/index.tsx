@@ -3,7 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import React from 'react';
 import { useForm } from 'react-hook-form';
 
-import { Box, Stack, Text } from '@chakra-ui/react';
+import { Box, Stack } from '@chakra-ui/react';
 
 import Button from '@/components/atoms/Button';
 import FieldItem from '@/components/atoms/FieldItem';
@@ -15,6 +15,7 @@ import { schema } from '@/utils/validations/pages/home';
 const HomePage: NextPageWithLayout = () => {
   const {
     register,
+    handleSubmit,
     formState: { errors },
   } = useForm<{ linkFile: string }>({
     defaultValues: {
@@ -23,6 +24,7 @@ const HomePage: NextPageWithLayout = () => {
     mode: 'all',
     resolver: zodResolver(schema),
   });
+  const handleSubmitLinkFile = () => {};
 
   return (
     <Box as="section" w="100%" mt="40px">
@@ -32,12 +34,15 @@ const HomePage: NextPageWithLayout = () => {
         borderRadius="10px"
         boxShadow="0 0 5px 0px rgba(140,134,134,0.75);"
         as="form"
+        noValidate
+        onSubmit={handleSubmit(handleSubmitLinkFile)}
       >
-        <Text fontSize="1.2rem" mb="5px">
-          Please upload your estimation file
-        </Text>
         <Stack gap="20px">
-          <FieldItem isRequired error={errors.linkFile?.message}>
+          <FieldItem
+            label=" Please upload your estimation file"
+            isRequired
+            error={errors.linkFile?.message}
+          >
             <Input
               fontSize="1.4rem"
               placeholder="Please input your link"
@@ -46,6 +51,7 @@ const HomePage: NextPageWithLayout = () => {
           </FieldItem>
 
           <Button
+            type="submit"
             variant="outline"
             w="285px"
             height="48px"
