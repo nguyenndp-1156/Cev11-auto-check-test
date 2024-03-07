@@ -58,6 +58,7 @@ const colors: ChakraTheme['colors'] = {
     light: '#0066cc',
     blue1: '#628DD7',
     blue2: '#707070',
+    blue3: '#788cd3',
   },
   fcTheme: '#000',
 };

@@ -6,7 +6,7 @@ const schema = zod.object({
   linkFile: zod
     .string()
     .trim()
-    .nonempty(messages.REQUIRED())
+    .nonempty(messages.REQUIRED_FIELD())
     .refine((value: string) => regexPatterns.LINK.test(value), {
       message: messages.INVALID_LINK(),
     }),

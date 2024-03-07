@@ -1,6 +1,7 @@
-// import axios from 'axios';
-// import { AXIOS_CONFIG } from '@/constants/auth';
+import axios from 'axios';
 
-// const axiosApp = axios.create(AXIOS_CONFIG);
+import { AXIOS_CONFIG } from '@/constants/auth';
 
-// export default axiosApp;
+const axiosApp = axios.create(AXIOS_CONFIG);
+
+export default axiosApp;
