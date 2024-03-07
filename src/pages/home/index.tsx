@@ -4,7 +4,7 @@ import _flatten from 'lodash/flatten';
 import _isArray from 'lodash/isArray';
 import _isEqual from 'lodash/isEqual';
 
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 
 import { Box, Stack, Table, Tbody, Td, Text, Tr } from '@chakra-ui/react';
@@ -44,6 +44,7 @@ const HomePage: NextPageWithLayout = () => {
       secondDomain: '',
     },
   ]);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [messageTable, setMessageTable] = useState<{
     message: string;
     data: any;
@@ -175,6 +176,8 @@ const HomePage: NextPageWithLayout = () => {
   };
 
   const handleSubmitLinkFile = async () => {
+    setIsLoading(true);
+
     try {
       const { linkFile } = getValues();
 
@@ -205,28 +208,6 @@ const HomePage: NextPageWithLayout = () => {
           };
         });
 
-      if (_flatten(isRowSameValue())?.length) {
-        setMessageTable({
-          message: messages.REQUIRED_DATA(),
-          data: _flatten(isRowSameValue()),
-        });
-      } else if (_isArray(duplicates) && duplicates?.length) {
-        setMessageTable({
-          message: messages.DUPLICATE_ROW(),
-          data: duplicates,
-        });
-      } else if (checkDuplicateDomain?.length) {
-        setMessageTable({
-          message: messages?.DUPLICATE_DOMAIN(),
-          data: checkDuplicateDomain,
-        });
-      } else {
-        setMessageTable({
-          message: '',
-          data: [],
-        });
-      }
-
       const data = {
         spreadSheetId: formatLinkFile[1],
         informationCompare: formatInformationCompare,
@@ -235,8 +216,26 @@ const HomePage: NextPageWithLayout = () => {
       if (messageTable?.message === '') {
         await createCheckEstimate(data);
       }
-    } catch (error) {}
+    } catch (error) {
+      setIsLoading(false);
+    } finally {
+      setIsLoading(false);
+    }
   };
+
+  useEffect(() => {
+    if (checkDuplicateDomain?.length) {
+      setMessageTable({
+        message: messages?.DUPLICATE_DOMAIN(),
+        data: checkDuplicateDomain,
+      });
+    } else {
+      setMessageTable({
+        message: '',
+        data: [],
+      });
+    }
+  }, [checkDuplicateDomain, conditionValueList]);
 
   return (
     <>
@@ -406,6 +405,7 @@ const HomePage: NextPageWithLayout = () => {
               _hover={{
                 backgroundColor: 'blue.blue1',
               }}
+              isLoading={isLoading}
             >
               Check estimation result
             </Button>
