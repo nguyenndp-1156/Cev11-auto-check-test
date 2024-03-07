@@ -45,7 +45,7 @@ const Input = forwardRef<InputProps, 'input'>(
     return (
       <InputGroup {...rest}>
         <ChakraInput
-          type="text"
+          type={type}
           ref={ref}
           name={name}
           placeholder={placeholder}
