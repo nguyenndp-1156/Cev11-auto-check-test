@@ -120,15 +120,18 @@ const HomePage: NextPageWithLayout = () => {
         return (
           Number(row?.id) >= 0 &&
           conditionValueList.some((elem, idx) => {
-            const newElem = { ...elem };
-            const newItem = { ...row };
-            delete newElem?.id;
-            delete newElem?.compareNumber;
-            delete newElem?.compareUnit;
-            delete newItem?.id;
-            delete newItem?.compareNumber;
-            delete newItem?.compareUnit;
-            return _isEqual(newElem, newItem) && idx !== index;
+            const cloneElem = { ...elem };
+            const cloneRow = { ...row };
+            const { compareUnit: unitFirst } = elem;
+            const { compareUnit: unitSecond } = row;
+            delete cloneElem?.id;
+            delete cloneRow?.id;
+
+            return (
+              !_isEqual(cloneElem, cloneRow) &&
+              _isEqual(unitFirst, unitSecond) &&
+              idx !== index
+            );
           })
         );
       }
@@ -229,6 +232,11 @@ const HomePage: NextPageWithLayout = () => {
         message: messages?.DUPLICATE_DOMAIN(),
         data: checkDuplicateDomain,
       });
+    } else if (_flatten(isRowSameValue())?.length) {
+      setMessageTable({
+        message: messages.REQUIRED_DATA(),
+        data: _flatten(isRowSameValue()),
+      });
     } else {
       setMessageTable({
         message: '',
@@ -243,10 +251,10 @@ const HomePage: NextPageWithLayout = () => {
         <title>CEV11 Auto check est tool</title>
       </Head>
 
-      <Box as="section" w="100%" mt="40px">
+      <Box as="section" w="100%" mt="20px">
         <Box
           background="white"
-          p={{ sm: '10px 15px', md: '50px' }}
+          p={{ sm: '10px 15px', md: '20px 25px' }}
           borderRadius="10px"
           boxShadow="0 0 5px 0px rgba(140,134,134,0.75);"
           as="form"
@@ -267,13 +275,13 @@ const HomePage: NextPageWithLayout = () => {
             </FieldItem>
 
             <Box>
-              <Text fontSize="1.6rem" mb="5px">
+              <Text fontSize="1.6rem" mb="5px" fontWeight="bold">
                 Setting verification condition
               </Text>
 
               <Stack flexDirection="row">
-                <FieldItem>
-                  <Table>
+                <Table>
+                  <FieldItem>
                     <Tbody>
                       {conditionValueList?.map((item, index) => (
                         <Tr
@@ -282,7 +290,7 @@ const HomePage: NextPageWithLayout = () => {
                           flexDirection="column"
                         >
                           <Box>
-                            <Td border="none">
+                            <Td border="none" pl="0" pr="10px">
                               <Controller
                                 name="firstDomain"
                                 control={control}
@@ -299,7 +307,7 @@ const HomePage: NextPageWithLayout = () => {
                               />
                             </Td>
 
-                            <Td border="none">
+                            <Td border="none" pl="0" pr="10px">
                               <Controller
                                 name="compareCondition"
                                 control={control}
@@ -314,13 +322,16 @@ const HomePage: NextPageWithLayout = () => {
                               />
                             </Td>
 
-                            <Td border="none">
+                            <Td border="none" pl="0" pr="10px">
                               <Controller
                                 control={control}
                                 name="compareNumber"
                                 render={({ field }) => (
                                   <Input
-                                    w="50px"
+                                    pr="0"
+                                    pl="0"
+                                    textAlign="center"
+                                    w="40px"
                                     type="number"
                                     defaultValue={0}
                                     onChange={(e) =>
@@ -331,13 +342,13 @@ const HomePage: NextPageWithLayout = () => {
                               />
                             </Td>
 
-                            <Td border="none">
+                            <Td border="none" pl="0" pr="10px">
                               <Controller
                                 control={control}
                                 name="compareUnit"
                                 render={({ field }) => (
                                   <Select
-                                    w="50px"
+                                    w="100px"
                                     options={COMPARE_UNIT}
                                     onChange={(e) =>
                                       handleChangeRow(index, field, e)
@@ -347,7 +358,7 @@ const HomePage: NextPageWithLayout = () => {
                               />
                             </Td>
 
-                            <Td border="none">
+                            <Td border="none" pl="0" pr="10px">
                               <Controller
                                 name="secondDomain"
                                 control={control}
@@ -361,6 +372,20 @@ const HomePage: NextPageWithLayout = () => {
                                 )}
                               />
                             </Td>
+
+                            <Td border="none" px="0" pr="10px">
+                              <Button
+                                h="40px"
+                                w="100px"
+                                fontSize="1.6rem"
+                                background="red"
+                                fontWeight="medium"
+                                borderRadius="5px"
+                                onClick={handleAddLine}
+                              >
+                                Delete
+                              </Button>
+                            </Td>
                           </Box>
 
                           {messageTable?.data?.findIndex(
@@ -373,20 +398,20 @@ const HomePage: NextPageWithLayout = () => {
                         </Tr>
                       ))}
                     </Tbody>
-                  </Table>
-                </FieldItem>
+                  </FieldItem>
+                </Table>
 
-                <Box ml="20px" mt="12px">
+                <Box mt="12px">
                   <Button
                     h="40px"
                     w="100px"
                     fontSize="1.6rem"
-                    background="success"
-                    fontWeight="normal"
+                    backgroundColor="blue.light"
+                    fontWeight="medium"
                     borderRadius="5px"
                     onClick={handleAddLine}
                   >
-                    Add More+
+                    Add More +
                   </Button>
                 </Box>
               </Stack>
@@ -398,7 +423,7 @@ const HomePage: NextPageWithLayout = () => {
               w="285px"
               height="48px"
               mx="auto"
-              fontSize="1.5rem"
+              fontSize="1.6rem"
               fontWeight="medium"
               backgroundColor="blue.light"
               transition="all 0.5s"
