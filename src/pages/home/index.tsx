@@ -4,7 +4,7 @@ import _flatten from 'lodash/flatten';
 import _isArray from 'lodash/isArray';
 import _isEqual from 'lodash/isEqual';
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 
 import { Box, Stack, Table, Tbody, Td, Text, Tr } from '@chakra-ui/react';
@@ -16,6 +16,7 @@ import Select from '@/components/atoms/Select';
 import { DefaultLayout } from '@/components/templates/DefaultLayout';
 import {
   COMPARE_UNIT,
+  DEFAULT_VALUE,
   messages,
   OPTION_COMPARE_CONDITION,
   OPTIONS_LIST_DOMAIN,
@@ -34,16 +35,7 @@ const HomePage: NextPageWithLayout = () => {
       compareUnit?: string;
       secondDomain?: string;
     }[]
-  >([
-    {
-      id: 0,
-      firstDomain: '',
-      compareCondition: '',
-      compareNumber: 0,
-      compareUnit: '',
-      secondDomain: '',
-    },
-  ]);
+  >(DEFAULT_VALUE);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [messageTable, setMessageTable] = useState<{
     message: string;
@@ -84,8 +76,8 @@ const HomePage: NextPageWithLayout = () => {
       const errRow: any = [];
       const cloneRow = { ...row };
 
-      delete cloneRow?.id;
-      delete cloneRow?.compareNumber;
+      delete cloneRow.id;
+      delete cloneRow.compareNumber;
 
       if (Object.values(cloneRow)?.filter((item) => item !== '')?.length > 0) {
         if (
@@ -122,14 +114,24 @@ const HomePage: NextPageWithLayout = () => {
           conditionValueList.some((elem, idx) => {
             const cloneElem = { ...elem };
             const cloneRow = { ...row };
-            const { compareUnit: unitFirst } = elem;
-            const { compareUnit: unitSecond } = row;
+            const {
+              compareUnit: unitFirst,
+              firstDomain: firstDomainElem,
+              secondDomain: secondDomainElem,
+            } = elem;
+            const {
+              compareUnit: unitSecond,
+              firstDomain: firstDomainRow,
+              secondDomain: secondDomainRow,
+            } = row;
             delete cloneElem?.id;
             delete cloneRow?.id;
 
             return (
               !_isEqual(cloneElem, cloneRow) &&
               _isEqual(unitFirst, unitSecond) &&
+              _isEqual(firstDomainElem, firstDomainRow) &&
+              _isEqual(secondDomainElem, secondDomainRow) &&
               idx !== index
             );
           })
@@ -169,14 +171,17 @@ const HomePage: NextPageWithLayout = () => {
     }
   };
 
-  const handleChangeRow = (index: number, field, e) => {
-    const { value } = e.target;
-    const rows = [...conditionValueList];
+  const handleChangeRow = useCallback(
+    (index: number, field, e) => {
+      const { value } = e.target;
+      const rows = [...conditionValueList];
 
-    rows[index][field?.name] = value;
+      rows[index][field?.name] = value;
 
-    setConditionValueList(rows);
-  };
+      setConditionValueList(rows);
+    },
+    [conditionValueList],
+  );
 
   const handleSubmitLinkFile = async () => {
     setIsLoading(true);
@@ -189,7 +194,6 @@ const HomePage: NextPageWithLayout = () => {
       const formatInformationCompare = conditionValueList
         ?.filter((value) => {
           const newValue = { ...value };
-          delete newValue?.id;
           return !_isEqual(
             {
               firstDomain: '',
@@ -216,7 +220,26 @@ const HomePage: NextPageWithLayout = () => {
         informationCompare: formatInformationCompare,
       };
 
-      if (messageTable?.message === '') {
+      if (_flatten(isRowSameValue())?.length) {
+        setMessageTable({
+          message: messages.REQUIRED_DATA(),
+          data: _flatten(isRowSameValue()),
+        });
+      } else if (_isArray(duplicates) && duplicates?.length) {
+        setMessageTable({
+          message: messages.DUPLICATE_ROW(),
+          data: duplicates,
+        });
+      } else if (checkDuplicateDomain?.length) {
+        setMessageTable({
+          message: messages?.DUPLICATE_DOMAIN(),
+          data: checkDuplicateDomain,
+        });
+      } else {
+        setMessageTable({
+          message: '',
+          data: [],
+        });
         await createCheckEstimate(data);
       }
     } catch (error) {
@@ -226,24 +249,124 @@ const HomePage: NextPageWithLayout = () => {
     }
   };
 
-  useEffect(() => {
-    if (checkDuplicateDomain?.length) {
-      setMessageTable({
-        message: messages?.DUPLICATE_DOMAIN(),
-        data: checkDuplicateDomain,
-      });
-    } else if (_flatten(isRowSameValue())?.length) {
-      setMessageTable({
-        message: messages.REQUIRED_DATA(),
-        data: _flatten(isRowSameValue()),
-      });
-    } else {
-      setMessageTable({
-        message: '',
-        data: [],
-      });
-    }
-  }, [checkDuplicateDomain, conditionValueList]);
+  const handleDeleteRow = useCallback(
+    (id: number) => {
+      if (conditionValueList?.length > 1) {
+        const list = conditionValueList.filter((row) => {
+          return row.id !== id;
+        });
+
+        setConditionValueList(list);
+      }
+    },
+    [conditionValueList],
+  );
+
+  const renderTableData = () => {
+    return conditionValueList?.map((item, index) => (
+      <Tr key={`${item}-${item?.id}`} display="flex" flexDirection="column">
+        <Box>
+          <Td border="none" pl="0" pr="10px">
+            <Controller
+              name="firstDomain"
+              control={control}
+              render={({ field }) => {
+                return (
+                  <Select
+                    defaultValue={item?.firstDomain}
+                    options={OPTIONS_LIST_DOMAIN}
+                    onChange={(e) => handleChangeRow(index, field, e)}
+                  />
+                );
+              }}
+            />
+          </Td>
+
+          <Td border="none" pl="0" pr="10px">
+            <Controller
+              name="compareCondition"
+              control={control}
+              render={({ field }) => (
+                <Select
+                  defaultValue={item?.compareCondition}
+                  options={OPTION_COMPARE_CONDITION}
+                  onChange={(e) => handleChangeRow(index, field, e)}
+                />
+              )}
+            />
+          </Td>
+
+          <Td border="none" pl="0" pr="10px">
+            <Controller
+              control={control}
+              name="compareNumber"
+              render={({ field }) => (
+                <Input
+                  pr="0"
+                  pl="0"
+                  textAlign="center"
+                  w="40px"
+                  type="number"
+                  defaultValue={item?.compareNumber}
+                  onChange={(e) => handleChangeRow(index, field, e)}
+                />
+              )}
+            />
+          </Td>
+
+          <Td border="none" pl="0" pr="10px">
+            <Controller
+              control={control}
+              name="compareUnit"
+              render={({ field }) => (
+                <Select
+                  defaultValue={item?.compareUnit}
+                  w="100px"
+                  options={COMPARE_UNIT}
+                  onChange={(e) => handleChangeRow(index, field, e)}
+                />
+              )}
+            />
+          </Td>
+
+          <Td border="none" pl="0" pr="10px">
+            <Controller
+              name="secondDomain"
+              control={control}
+              render={({ field }) => (
+                <Select
+                  defaultValue={item?.secondDomain}
+                  options={OPTIONS_LIST_DOMAIN}
+                  onChange={(e) => handleChangeRow(index, field, e)}
+                />
+              )}
+            />
+          </Td>
+
+          <Td border="none" px="0" pr="10px">
+            <Button
+              h="40px"
+              w="100px"
+              fontSize="1.6rem"
+              background="red"
+              fontWeight="medium"
+              borderRadius="5px"
+              onClick={() => handleDeleteRow(Number(item?.id))}
+            >
+              Delete
+            </Button>
+          </Td>
+        </Box>
+
+        {messageTable?.data?.findIndex((row) => Number(row?.id) === index) >=
+          0 && (
+          <Text color="error" fontSize="1.4rem" pl="15px">
+            {messageTable?.message}
+          </Text>
+        )}
+      </Tr>
+    ));
+  };
 
   return (
     <>
@@ -278,126 +401,14 @@ const HomePage: NextPageWithLayout = () => {
               <Text fontSize="1.6rem" mb="5px" fontWeight="bold">
                 Setting verification condition
               </Text>
+              <Text fontSize="1.4rem">
+                Please input the trigger point that you want to verify
+              </Text>
 
               <Stack flexDirection="row">
                 <Table>
                   <FieldItem>
-                    <Tbody>
-                      {conditionValueList?.map((item, index) => (
-                        <Tr
-                          key={`${item}-${index}`}
-                          display="flex"
-                          flexDirection="column"
-                        >
-                          <Box>
-                            <Td border="none" pl="0" pr="10px">
-                              <Controller
-                                name="firstDomain"
-                                control={control}
-                                render={({ field }) => {
-                                  return (
-                                    <Select
-                                      options={OPTIONS_LIST_DOMAIN}
-                                      onChange={(e) =>
-                                        handleChangeRow(index, field, e)
-                                      }
-                                    />
-                                  );
-                                }}
-                              />
-                            </Td>
-
-                            <Td border="none" pl="0" pr="10px">
-                              <Controller
-                                name="compareCondition"
-                                control={control}
-                                render={({ field }) => (
-                                  <Select
-                                    options={OPTION_COMPARE_CONDITION}
-                                    onChange={(e) =>
-                                      handleChangeRow(index, field, e)
-                                    }
-                                  />
-                                )}
-                              />
-                            </Td>
-
-                            <Td border="none" pl="0" pr="10px">
-                              <Controller
-                                control={control}
-                                name="compareNumber"
-                                render={({ field }) => (
-                                  <Input
-                                    pr="0"
-                                    pl="0"
-                                    textAlign="center"
-                                    w="40px"
-                                    type="number"
-                                    defaultValue={0}
-                                    onChange={(e) =>
-                                      handleChangeRow(index, field, e)
-                                    }
-                                  />
-                                )}
-                              />
-                            </Td>
-
-                            <Td border="none" pl="0" pr="10px">
-                              <Controller
-                                control={control}
-                                name="compareUnit"
-                                render={({ field }) => (
-                                  <Select
-                                    w="100px"
-                                    options={COMPARE_UNIT}
-                                    onChange={(e) =>
-                                      handleChangeRow(index, field, e)
-                                    }
-                                  />
-                                )}
-                              />
-                            </Td>
-
-                            <Td border="none" pl="0" pr="10px">
-                              <Controller
-                                name="secondDomain"
-                                control={control}
-                                render={({ field }) => (
-                                  <Select
-                                    options={OPTIONS_LIST_DOMAIN}
-                                    onChange={(e) =>
-                                      handleChangeRow(index, field, e)
-                                    }
-                                  />
-                                )}
-                              />
-                            </Td>
-
-                            <Td border="none" px="0" pr="10px">
-                              <Button
-                                h="40px"
-                                w="100px"
-                                fontSize="1.6rem"
-                                background="red"
-                                fontWeight="medium"
-                                borderRadius="5px"
-                                onClick={handleAddLine}
-                              >
-                                Delete
-                              </Button>
-                            </Td>
-                          </Box>
-
-                          {messageTable?.data?.findIndex(
-                            (row) => Number(row?.id) === index,
-                          ) >= 0 && (
-                            <Text color="error" fontSize="1.4rem" pl="15px">
-                              {messageTable?.message}
-                            </Text>
-                          )}
-                        </Tr>
-                      ))}
-                    </Tbody>
+                    <Tbody>{renderTableData()}</Tbody>
                   </FieldItem>
                 </Table>
 
