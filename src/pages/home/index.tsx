@@ -47,7 +47,8 @@ const HomePage: NextPageWithLayout = () => {
 
   const {
     register,
-    handleSubmit,
+    watch,
+    setError,
     control,
     getValues,
     formState: { errors },
@@ -70,6 +71,8 @@ const HomePage: NextPageWithLayout = () => {
     mode: 'all',
     resolver: zodResolver(schema),
   });
+
+  const hasLinkFile = watch('linkFile');
 
   const isRowSameValue = () => {
     return conditionValueList?.map((row) => {
@@ -139,6 +142,31 @@ const HomePage: NextPageWithLayout = () => {
       }
     });
 
+  const isPassValidation = () => {
+    if (_flatten(isRowSameValue())?.length) {
+      setMessageTable({
+        message: messages.REQUIRED_DATA(),
+        data: _flatten(isRowSameValue()),
+      });
+      return false;
+    } else if (_isArray(duplicates) && duplicates?.length) {
+      setMessageTable({ message: messages.DUPLICATE_ROW(), data: duplicates });
+      return false;
+    } else if (checkDuplicateDomain?.length) {
+      setMessageTable({
+        message: messages?.DUPLICATE_DOMAIN(),
+        data: checkDuplicateDomain,
+      });
+      return false;
+    } else {
+      setMessageTable({
+        message: '',
+        data: [],
+      });
+      return true;
+    }
+  };
+
   const handleAddLine = () => {
     const newLine = {
       id: conditionValueList?.length,
@@ -149,24 +177,7 @@ const HomePage: NextPageWithLayout = () => {
       secondDomain: '',
     };
 
-    if (_flatten(isRowSameValue())?.length) {
-      setMessageTable({
-        message: messages.REQUIRED_DATA(),
-        data: _flatten(isRowSameValue()),
-      });
-    } else if (_isArray(duplicates) && duplicates?.length) {
-      setMessageTable({ message: messages.DUPLICATE_ROW(), data: duplicates });
-    } else if (checkDuplicateDomain?.length) {
-      setMessageTable({
-        message: messages?.DUPLICATE_DOMAIN(),
-        data: checkDuplicateDomain,
-      });
-    } else {
-      setMessageTable({
-        message: '',
-        data: [],
-      });
-
+    if (isPassValidation()) {
       setConditionValueList([...conditionValueList, newLine]);
     }
   };
@@ -184,6 +195,13 @@ const HomePage: NextPageWithLayout = () => {
   );
 
   const handleSubmitLinkFile = async () => {
+    isPassValidation();
+    if (!hasLinkFile?.trim()) {
+      setError('linkFile', {
+        message: messages.REQUIRED_FIELD(),
+      });
+    }
+
     setIsLoading(true);
 
     try {
@@ -220,26 +238,7 @@ const HomePage: NextPageWithLayout = () => {
         informationCompare: formatInformationCompare,
       };
 
-      if (_flatten(isRowSameValue())?.length) {
-        setMessageTable({
-          message: messages.REQUIRED_DATA(),
-          data: _flatten(isRowSameValue()),
-        });
-      } else if (_isArray(duplicates) && duplicates?.length) {
-        setMessageTable({
-          message: messages.DUPLICATE_ROW(),
-          data: duplicates,
-        });
-      } else if (checkDuplicateDomain?.length) {
-        setMessageTable({
-          message: messages?.DUPLICATE_DOMAIN(),
-          data: checkDuplicateDomain,
-        });
-      } else {
-        setMessageTable({
-          message: '',
-          data: [],
-        });
+      if (messageTable?.message === '') {
         await createCheckEstimate(data);
       }
     } catch (error) {
@@ -282,7 +281,7 @@ const HomePage: NextPageWithLayout = () => {
             />
           </Td>
 
-          <Td border="none" pl="0" pr="10px">
+          <Td border="none" pl="0" pr="10px" w="70px">
             <Controller
               name="compareCondition"
               control={control}
@@ -382,7 +381,6 @@ const HomePage: NextPageWithLayout = () => {
           boxShadow="0 0 5px 0px rgba(140,134,134,0.75);"
           as="form"
           noValidate
-          onSubmit={handleSubmit(handleSubmitLinkFile)}
         >
           <Stack gap="20px">
             <FieldItem
@@ -429,7 +427,6 @@ const HomePage: NextPageWithLayout = () => {
             </Box>
 
             <Button
-              type="submit"
               variant="solid"
               w="285px"
               height="48px"
@@ -442,6 +439,7 @@ const HomePage: NextPageWithLayout = () => {
                 backgroundColor: 'blue.blue1',
               }}
               isLoading={isLoading}
+              onClick={handleSubmitLinkFile}
             >
               Check estimation result
             </Button>

@@ -31,7 +31,7 @@ const FieldItem = ({
           mb="4px"
           color={labelColor}
           fontSize="1.6rem"
-          fontWeight="light"
+          fontWeight="bold"
           requiredIndicator={
             <Text as="span" color="red.red1" ml="4px" fontSize="1.6rem">
               *
