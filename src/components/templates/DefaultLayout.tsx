@@ -14,7 +14,7 @@ export function DefaultLayout(props: Props) {
     <Box display="flex" flexDirection="column" minHeight="100vh">
       <Header />
       <Container
-        maxW="container.md"
+        maxW="800px"
         flex="1"
         px="24px"
         pb={{ sm: '32px', md: '56px' }}
